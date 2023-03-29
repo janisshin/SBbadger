@@ -4623,15 +4623,17 @@ def get_antimony_script(reaction_list, ic_params, kinetics, allo_reg, rev_prob, 
         floating_ids = [i for i in range(n_species)]
 
         if len(floating_ids) > 0:
-            rxn_str += 'var ' + 'S' + str(floating_ids[0])
-            for index in floating_ids[1:]:
+            nonduplo_ids = [i for i in floating_ids if i not in boundary_ids]
+            rxn_str += 'var ' + 'S' + str(nonduplo_ids[0])
+            for index in nonduplo_ids[1:]:
                 rxn_str += ', ' + 'S' + str(index)
             rxn_str += '\n'
 
         if len(boundary_ids) > 0:
-            rxn_str += 'ext ' + 'B' + str(boundary_ids[0])
+            boundary_ids = [*set(boundary_ids)]
+            rxn_str += 'ext ' + 'S' + str(boundary_ids[0]) 
             for index in boundary_ids[1:]:
-                rxn_str += ', ' + 'B' + str(index)
+                rxn_str += ', ' + 'S' + str(index) 
             rxn_str += '\n'
         rxn_str += '\n'
 
@@ -11065,7 +11067,7 @@ def get_antimony_script(reaction_list, ic_params, kinetics, allo_reg, rev_prob, 
             if add_enzyme:
                 enzyme = 'E' + str(reaction_index) + '*('
                 enzyme_end = ')'
-            rxn_str += 'J' + str(reaction_index) + ': -> S' + str(each) + '; ' + enzyme + 'syn' + str(each) \
+            rxn_str += 'EX_S' + str(each) + ': -> S' + str(each) + '; ' + enzyme + 'syn' + str(each) \
                        + enzyme_end + '\n'
             reaction_index += 1
             num_syn_deg += 1
@@ -11076,7 +11078,7 @@ def get_antimony_script(reaction_list, ic_params, kinetics, allo_reg, rev_prob, 
             if add_enzyme:
                 enzyme = 'E' + str(reaction_index) + '*('
                 enzyme_end = ')'
-            rxn_str += 'J' + str(reaction_index) + ': S' + str(each) + ' -> ; ' + enzyme + 'deg' + str(each) + '*' \
+            rxn_str += 'EX_S' + str(reaction_index) + ': S' + str(each) + ' -> ; ' + enzyme + 'deg' + str(each) + '*' \
                        + 'S' + str(each) + enzyme_end + '\n'
             reaction_index += 1
             num_syn_deg += 1
@@ -11087,9 +11089,9 @@ def get_antimony_script(reaction_list, ic_params, kinetics, allo_reg, rev_prob, 
             if add_enzyme:
                 enzyme = 'E' + str(reaction_index) + '*('
                 enzyme_end = ')'
-            b_source.append('B' + str(each))
-            rxn_str += 'J' + str(reaction_index) + ': B' + str(each) + ' -> S' + str(each) + '; ' + enzyme + 'syn' \
-                       + str(each) + ' * B' + str(each) + enzyme_end + '\n'
+            b_source.append('S' + str(each) + '_y')
+            rxn_str += 'EX_S' + str(each) + ': S' + str(each) + '_y' + ' -> S' + str(each) + '; ' + enzyme + 'syn' \
+                       + str(each) + ' * S' + str(each) + '_y' + enzyme_end + '\n'
             reaction_index += 1
             num_syn_deg += 1
         rxn_str += '\n'
@@ -11099,8 +11101,8 @@ def get_antimony_script(reaction_list, ic_params, kinetics, allo_reg, rev_prob, 
             if add_enzyme:
                 enzyme = 'E' + str(reaction_index) + '*('
                 enzyme_end = ')'
-            b_sink.append('B' + str(each))
-            rxn_str += 'J' + str(reaction_index) + ': S' + str(each) + ' -> B' + str(each) + '; ' + enzyme + 'deg' \
+            b_sink.append('S' + str(each) + '_y')
+            rxn_str += 'EX_S' + str(each) + ': S' + str(each) + ' -> S' + str(each) + '_y' + '; ' + enzyme + 'deg' \
                        + str(each) + ' * S' + str(each) + enzyme_end + '\n'
             reaction_index += 1
             num_syn_deg += 1
